@@ -1,0 +1,71 @@
+name: Daily Schedule Optimization
+
+on:
+  schedule:
+    # Run every day at 8:00 AM Brussels time (6:00 AM UTC)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  optimize-schedule:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create logs directory
+      run: mkdir -p logs
+        
+    - name: Run schedule optimization
+      env:
+        ICS_URL: ${{ secrets.ICS_URL }}
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        CALENDAR_NAME: ${{ vars.CALENDAR_NAME || 'UHasselt Optimized Schedule' }}
+        PREFERRED_GROUP: ${{ vars.PREFERRED_GROUP || 'A' }}
+        OPTIMIZATION_MODE: ${{ vars.OPTIMIZATION_MODE || 'earliest_lesson' }}
+      run: |
+        # Create credentials file for Google Calendar
+        if [ -n "$GOOGLE_CREDENTIALS" ]; then
+          echo "$GOOGLE_CREDENTIALS" > credentials.json
+        fi
+        
+        # Create config file
+        cat > config.json << EOF
+        {
+          "ics_url": "$ICS_URL",
+          "preferred_group": "$PREFERRED_GROUP",
+          "fallback_group_behavior": "use_all_if_missing",
+          "optimization_mode": "$OPTIMIZATION_MODE",
+          "minimum_break_minutes": 1,
+          "skip_weekends": true,
+          "timezone": "Europe/Brussels"
+        }
+        EOF
+        
+        # Run optimization
+        python main.py --config config.json --sync-google --calendar-name "$CALENDAR_NAME"
+        
+    - name: Upload logs
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: optimization-logs
+        path: logs/
+        
+    - name: Upload output
+      uses: actions/upload-artifact@v3
+      if: success()
+      with:
+        name: optimized-schedule
+        path: output/
