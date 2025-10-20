@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  uhasselt-optimizer:
+    build: .
+    container_name: uhasselt-schedule-optimizer
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./output:/app/output
+      - ./logs:/app/logs
+    environment:
+      - TZ=Europe/Brussels
+    restart: unless-stopped
+    command: python main.py --config config.json

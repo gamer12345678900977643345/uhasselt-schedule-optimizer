@@ -1,0 +1,23 @@
+{
+  "ics_url": "https://mytimetable.uhasselt.be/ical/your-url-here",
+  "preferred_group": "A",
+  "fallback_group_behavior": "use_all_if_missing",
+  "optimization_mode": "earliest_lesson",
+  "minimum_break_minutes": 1,
+  "skip_weekends": true,
+  "timezone": "Europe/Brussels",
+  "google_calendar": {
+    "enabled": false,
+    "calendar_name": "UHasselt Optimized Schedule",
+    "credentials_file": "credentials.json"
+  },
+  "api": {
+    "enabled": true,
+    "port": 5000,
+    "host": "0.0.0.0"
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "logs/optimizer.log"
+  }
+}

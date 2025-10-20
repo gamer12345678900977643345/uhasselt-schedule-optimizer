@@ -1,0 +1,67 @@
+name: UHasselt Schedule Optimizer
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC (8 AM Brussels time)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      ics_url:
+        description: 'MyTimetable ICS URL'
+        required: true
+        type: string
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create configuration
+      run: |
+        echo '{
+          "ics_url": "${{ github.event.inputs.ics_url || secrets.UHASSELT_ICS_URL }}",
+          "preferred_group": "A",
+          "fallback_group_behavior": "use_all_if_missing",
+          "optimization_mode": "earliest_lesson",
+          "minimum_break_minutes": 1,
+          "skip_weekends": true,
+          "timezone": "Europe/Brussels"
+        }' > config.json
+        
+    - name: Run optimizer
+      run: |
+        python main.py --config config.json --output optimized_schedule.ics
+        
+    - name: Upload optimized schedule
+      uses: actions/upload-artifact@v3
+      with:
+        name: optimized-schedule
+        path: output/optimized_schedule.ics
+        
+    - name: Create release
+      if: github.event_name == 'workflow_dispatch'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: output/optimized_schedule.ics
+        tag_name: optimized-schedule-${{ github.run_number }}
+        name: Optimized Schedule ${{ github.run_number }}
+        body: |
+          Optimized schedule generated on ${{ github.run_number }}
+          
+          This schedule has been optimized according to your preferences:
+          - Preferred group: A
+          - Optimization mode: earliest_lesson
+          - Weekend lessons: skipped

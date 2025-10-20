@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UHasselt Schedule Optimizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .download-section {
+            background: #3498db;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .download-section a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .instructions {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .url-box {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 UHasselt Schedule Optimizer</h1>
+        <p>Je geoptimaliseerde rooster is klaar! Dit rooster is automatisch geoptimaliseerd voor Groep A voorkeuren.</p>
+        
+        <div class="download-section">
+            <a href="optimized_schedule.ics">📥 Download Geoptimaliseerd Rooster</a>
+        </div>
+        
+        <div class="instructions">
+            <h3>🔗 Google Calendar Importeren</h3>
+            <p>1. Kopieer deze URL:</p>
+            <div class="url-box" id="calendarUrl">https://gamer12345678900977643345.github.io/uhasselt-schedule-optimizer/optimized_schedule.ics</div>
+            <p>2. Ga naar <a href="https://calendar.google.com" target="_blank">Google Calendar</a></p>
+            <p>3. Klik op "+" → "From URL"</p>
+            <p>4. Plak de URL hierboven</p>
+            <p>5. Google Calendar synchroniseert automatisch!</p>
+        </div>
+        
+        <div class="instructions">
+            <h3>⚙️ Automatische Updates</h3>
+            <p>Dit rooster wordt dagelijks om 8:00 (Brussels tijd) automatisch bijgewerkt met de nieuwste gegevens van MyTimetable.</p>
+            <p>Laatst bijgewerkt: <span id="lastUpdate">Wordt geladen...</span></p>
+        </div>
+        
+        <div class="instructions">
+            <h3>📚 Over dit project</h3>
+            <p>De UHasselt Schedule Optimizer analyseert automatisch je MyTimetable ICS-bestand, detecteert groepen (A/B/C/D/E), en genereert een geoptimaliseerd rooster volgens je voorkeuren.</p>
+            <p><strong>Functies:</strong></p>
+            <ul>
+                <li>✅ Automatische groepdetectie</li>
+                <li>✅ Optimalisatie voor minimale tijdsverlies</li>
+                <li>✅ Google Calendar compatibel</li>
+                <li>✅ Dagelijkse automatische updates</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Update last modified time
+        fetch('optimized_schedule.ics')
+            .then(response => response.text())
+            .then(data => {
+                const lines = data.split('\n');
+                const dtstamp = lines.find(line => line.startsWith('DTSTAMP:'));
+                if (dtstamp) {
+                    const timestamp = dtstamp.replace('DTSTAMP:', '');
+                    const date = new Date(timestamp.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/, '$1-$2-$3 $4:$5:$6 UTC'));
+                    document.getElementById('lastUpdate').textContent = date.toLocaleString('nl-BE');
+                }
+            })
+            .catch(() => {
+                document.getElementById('lastUpdate').textContent = 'Onbekend';
+            });
+    </script>
+</body>
+</html>
