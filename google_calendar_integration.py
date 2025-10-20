@@ -250,8 +250,8 @@ class GoogleCalendarIntegration:
             self.logger.error(f"Failed to upload events: {e}")
             return False
     
-    def get_calendar_public_url(self, calendar_id: str) -> Optional[str]:
-        """Get public URL for the calendar."""
+    def get_calendar_public_url(self, calendar_id: str, user_email: str = None) -> Optional[str]:
+        """Get public URL for the calendar and share with user."""
         try:
             calendar = self.service.calendars().get(calendarId=calendar_id).execute()
             
@@ -268,6 +268,25 @@ class GoogleCalendarIntegration:
                 body=rule
             ).execute()
             
+            # Share with specific user if email provided
+            if user_email:
+                user_rule = {
+                    'scope': {
+                        'type': 'user',
+                        'value': user_email
+                    },
+                    'role': 'owner'
+                }
+                
+                try:
+                    self.service.acl().insert(
+                        calendarId=calendar_id,
+                        body=user_rule
+                    ).execute()
+                    self.logger.info(f"Calendar shared with {user_email}")
+                except HttpError as e:
+                    self.logger.warning(f"Could not share calendar with {user_email}: {e}")
+            
             # Return public URL
             public_url = f"https://calendar.google.com/calendar/embed?src={calendar_id}"
             return public_url
@@ -277,7 +296,8 @@ class GoogleCalendarIntegration:
             return None
     
     def sync_schedule(self, ics_calendar: Calendar, 
-                     calendar_name: str = "UHasselt Optimized Schedule") -> Optional[str]:
+                     calendar_name: str = "UHasselt Optimized Schedule", 
+                     user_email: str = None) -> Optional[str]:
         """Complete sync process: authenticate, get/create calendar, upload events."""
         try:
             # Authenticate
@@ -293,8 +313,8 @@ class GoogleCalendarIntegration:
             if not self.upload_events(ics_calendar, calendar_id):
                 return None
             
-            # Get public URL
-            public_url = self.get_calendar_public_url(calendar_id)
+            # Get public URL and share with user
+            public_url = self.get_calendar_public_url(calendar_id, user_email)
             
             self.logger.info("Schedule sync completed successfully!")
             return public_url
