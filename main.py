@@ -11,6 +11,7 @@ Version: 1.0
 import argparse
 import json
 import logging
+import os
 import re
 import sys
 from datetime import datetime, timedelta
@@ -24,7 +25,6 @@ from ics import Calendar, Event
 from ics.icalendar import Calendar as ICalendar
 
 from google_calendar_integration import GoogleCalendarIntegration
-
 
 class UHasseltScheduleOptimizer:
     """Main class for optimizing UHasselt schedules."""
