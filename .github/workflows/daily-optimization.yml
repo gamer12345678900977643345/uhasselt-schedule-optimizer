@@ -56,15 +56,15 @@ jobs:
         # Run optimization
         python main.py --config config.json --sync-google --calendar-name "$CALENDAR_NAME"
         
-    - name: Upload logs
-      uses: actions/upload-artifact@v3
+        - name: Upload logs
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: optimization-logs
         path: logs/
         
     - name: Upload output
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: optimized-schedule
