@@ -234,7 +234,9 @@ class UHasseltScheduleOptimizer:
             if sync_to_google:
                 try:
                     integration = GoogleCalendarIntegration()
-                    google_url = integration.sync_schedule(optimized_calendar, calendar_name)
+                    # Get user email from environment
+                    user_email = os.environ.get('USER_EMAIL')
+                    google_url = integration.sync_schedule(optimized_calendar, calendar_name, user_email)
                     if google_url:
                         self.logger.info(f"Calendar synced to Google: {google_url}")
                     else:
